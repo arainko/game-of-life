@@ -30,7 +30,7 @@ object life extends App{
     }
 
     def nextBoardState(board: IndexedSeq[IndexedSeq[Int]]): IndexedSeq[IndexedSeq[Int]] = {
-        val nextBoard= board.map(n => n.map(k => if (k == 1) 0 else 0))  // fresh board
+        val nextBoard= board.map(n => n.map(k => 0))  // fresh board
         def stateHelper(board: IndexedSeq[IndexedSeq[Int]], nextStateBoard: IndexedSeq[IndexedSeq[Int]], row: Int, col: Int): IndexedSeq[IndexedSeq[Int]] = {
             val rightEdge = board.head.size-1
             val bottomEdge = board.size-1 
@@ -67,8 +67,6 @@ object life extends App{
                      }
                 }
 
-                print(value + " ")
-
                 val updatedBoard = board(row)(col) match {
                     case 0 => value match{
                         case 3 => nextStateBoard.updated(row, nextStateBoard(row).updated(col, 1))
@@ -76,7 +74,7 @@ object life extends App{
                     }
                     case 1 => value match {
                         case a if (value == 0 || value == 1 || (value > 3)) => nextStateBoard.updated(row, nextStateBoard(row).updated(col, 0))
-                        case _ => nextStateBoard
+                        case _ => nextStateBoard.updated(row, nextStateBoard(row).updated(col, 1))
                     }
                 }
 
@@ -94,19 +92,16 @@ object life extends App{
         if (board == deadBoard) return ()
 
         printBoard(board.map(n => n.map(k => if (k == 1) '#' else ' ')))
-        Thread.sleep(5000)
+        Thread.sleep(500)
         print("\u001b[2J")
         runLife(nextBoardState(board))
     }
 
 
-    val test = IndexedSeq(IndexedSeq(0,0,1),IndexedSeq(0,1,1),IndexedSeq(0,0,0))
-
-    val init = initBoardState(100,33)
+    val init = initBoardState(500,100)
     val board = nextBoardState(init)
 
-    runLife(test)
+    runLife(board)
 
-    //print("\u001b[2J")
     
 }
