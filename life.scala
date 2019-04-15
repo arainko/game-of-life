@@ -1,22 +1,28 @@
 import scala.util.Random
 import scala.annotation.tailrec
+import scala.io.Source
 
 object life extends App{
 
-    def initBoardState(width: Int, height: Int): IndexedSeq[IndexedSeq[Int]] = {
+    def boardFromFile(filePath: String): Vector[Vector[Int]] = {
+        val boardFile = Source.fromFile(filePath).getLines
+        val convertedBoard = boardFile.foldLeft (Vector.empty[Vector[Int]]) ( (acc: Vector[Vector[Int]], curr: String) => acc :+ curr.toVector.map(n => n.asDigit) )
+        convertedBoard.filter(n => !(n.isEmpty))
+    }
+
+    def initBoardState(width: Int, height: Int): Vector[Vector[Int]] = {
         @tailrec
-        def stateHelper(col: Int, row: Int, tempOut: IndexedSeq[Int], output: IndexedSeq[IndexedSeq[Int]]): IndexedSeq[IndexedSeq[Int]] = (row, col) match {
+        def stateHelper(col: Int, row: Int, tempOut: Vector[Int], output: Vector[Vector[Int]]): Vector[Vector[Int]] = (row, col) match {
             case a if (row == height && col == width) => output // board done
-            case b if (col == width) => stateHelper(0, row+1, IndexedSeq.empty[Int], output :+ tempOut) // single row done
+            case b if (col == width) => stateHelper(0, row+1, Vector.empty[Int], output :+ tempOut) // single row done
             case _ => {
                 val value = Random.nextInt(2)
                 stateHelper(col+1, row, tempOut :+ value, output) // single fill
             }
         }
-    stateHelper(0, 0, IndexedSeq.empty[Int], IndexedSeq.empty[IndexedSeq[Int]])
+    stateHelper(0, 0, Vector.empty[Int], Vector.empty[Vector[Int]])
     }
 
-    @tailrec
     def printBoard[A](seq: Seq[Seq[A]]): Unit = seq match {
         case Seq() => return ()
         case Seq(single) => {
@@ -29,9 +35,8 @@ object life extends App{
         }
     }
 
-    def nextBoardState(board: IndexedSeq[IndexedSeq[Int]]): IndexedSeq[IndexedSeq[Int]] = {
-        @tailrec
-        def stateHelper(board: IndexedSeq[IndexedSeq[Int]], nextStateBoard: IndexedSeq[IndexedSeq[Int]], row: Int, col: Int): IndexedSeq[IndexedSeq[Int]] = row match {
+    def nextBoardState(board: Vector[Vector[Int]]): Vector[Vector[Int]] = {
+        def stateHelper(board: Vector[Vector[Int]], nextStateBoard: Vector[Vector[Int]], row: Int, col: Int): Vector[Vector[Int]] = row match {
             case a if (row == board.size) => nextStateBoard
             case _ => {
                 val rightEdge = board.head.size-1
@@ -87,16 +92,17 @@ object life extends App{
         stateHelper(board, nextBoard, 0, 0)
     }
 
-    def runLife(board: IndexedSeq[IndexedSeq[Int]]): Unit = {
+    def runLife(board: Vector[Vector[Int]]): Unit = {
         print("\u001b[2J")
         printBoard(board.map(n => n.map(k => if (k == 1) '#' else ' ')))
         Thread.sleep(150)
         runLife(nextBoardState(board))
     }
 
-    val init = initBoardState(60,20)
+    val init = boardFromFile("cos.txt")
+    //val init = initBoardState(10,10)
     val board = nextBoardState(init)
-
+    //println(init)
     runLife(board)
 
     
