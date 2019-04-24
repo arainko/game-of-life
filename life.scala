@@ -8,31 +8,19 @@ object life extends App{
         val boardFile = Source.fromFile(filePath).getLines
         val convertedBoard = boardFile.foldLeft (Vector.empty[Vector[Int]]) ( (acc: Vector[Vector[Int]], curr: String) => acc :+ curr.toVector.map(n => n.asDigit) )
         convertedBoard.filter(n => !(n.isEmpty))
+
     }
 
     def initBoardState(width: Int, height: Int): Vector[Vector[Int]] = {
-        @tailrec
         def stateHelper(col: Int, row: Int, tempOut: Vector[Int], output: Vector[Vector[Int]]): Vector[Vector[Int]] = (row, col) match {
-            case a if (row == height && col == width) => output // board done
-            case b if (col == width) => stateHelper(0, row+1, Vector.empty[Int], output :+ tempOut) // single row done
+            case (row, col) if (row == height && col == width) => output // board done
+            case (row, col) if (col == width) => stateHelper(0, row+1, Vector.empty[Int], output :+ tempOut) // single row done
             case _ => {
                 val value = Random.nextInt(2)
                 stateHelper(col+1, row, tempOut :+ value, output) // single fill
             }
         }
     stateHelper(0, 0, Vector.empty[Int], Vector.empty[Vector[Int]])
-    }
-
-    def printBoard[A](seq: Seq[Seq[A]]): Unit = seq match {
-        case Seq() => return ()
-        case Seq(single) => {
-            print("\n" + single.mkString("") + "\n\n")
-            return ()
-        }
-        case (head +: tail) => {
-            print("\n" + head.mkString(""))
-            printBoard(tail)
-        }
     }
 
     def nextBoardState(board: Vector[Vector[Int]]): Vector[Vector[Int]] = {
@@ -42,28 +30,28 @@ object life extends App{
                 val rightEdge = board.head.size-1
                 val bottomEdge = board.size-1 
                 val value = (row, col) match {
-                    case a if (row == 0 && col == 0) => { // left upper corner
+                    case (row, col) if (row == 0 && col == 0) => { // left upper corner
                         board(row+1)(col) + board(row+1)(col+1) + board(row)(col+1) 
                     }
-                    case b if (row == bottomEdge && col ==  0) => { // left bottom corner
+                    case (row, col) if (row == bottomEdge && col ==  0) => { // left bottom corner
                         board(row)(col+1) + board(row-1)(col+1) + board(row-1)(col)     
                     }
-                    case c if (row == bottomEdge && col == rightEdge) => { // right bottom corner
+                    case (row, col) if (row == bottomEdge && col == rightEdge) => { // right bottom corner
                         board(row-1)(col) + board(row-1)(col-1) + board(row)(col-1) 
                     }
-                    case d if (row == 0 && col == rightEdge) => { // right upper corner
+                    case (row, col) if (row == 0 && col == rightEdge) => { // right upper corner
                         board(row)(col-1) + board(row+1)(col-1) + board(row+1)(col) 
                     }
-                    case e if (row == 0) => { // top edge
+                    case (row, col) if (row == 0) => { // top edge
                         board(row)(col-1) + board(row+1)(col-1) + board(row+1)(col) + board(row+1)(col+1) + board(row)(col+1)
                     }
-                    case f if (col ==  0) => { // left edge
+                    case (row, col) if (col ==  0) => { // left edge
                         board(row+1)(col) + board(row+1)(col+1) + board(row)(col+1) + board(row-1)(col+1) + board(row-1)(col)
                     }
-                    case g if (row == bottomEdge) => { // bottom edge
+                    case (row, col) if (row == bottomEdge) => { // bottom edge
                         board(row)(col+1) + board(row-1)(col+1) + board(row-1)(col) + board(row-1)(col-1) + board(row)(col-1)
                     }
-                    case h if (col == rightEdge) => { // right edge
+                    case (row, col) if (col == rightEdge) => { // right edge
                         board(row-1)(col) + board(row-1)(col-1) + board(row)(col-1) + board(row+1)(col-1) + board(row+1)(col)
                     }
                     case _ => { // everything else
@@ -88,14 +76,20 @@ object life extends App{
                 }
             }
         }
-        val nextBoard= board.map(n => n.map(k => 0))  // fresh board
-        stateHelper(board, nextBoard, 0, 0)
+    val freshBoard= board.map(n => n.map(k => 0))
+    stateHelper(board, freshBoard, 0, 0)
     }
 
+    def printBoard[A](seq: Seq[Seq[A]]): Unit = seq.foreach(n => print("\n" + n.mkString("")))
+
     def runLife(board: Vector[Vector[Int]]): Unit = {
-        print("\u001b[2J")
-        printBoard(board.map(n => n.map(k => if (k == 1) '#' else ' ')))
+        print("\u001b[2J") // clear screen char
+
+        val formattedBoard = board.map(n => n.map(k => if (k == 1) '#' else ' '))
+        printBoard(formattedBoard)
+
         Thread.sleep(150)
+
         runLife(nextBoardState(board))
     }
 
