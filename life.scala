@@ -6,9 +6,13 @@ object life extends App{
 
     def boardFromFile(filePath: String): Vector[Vector[Int]] = {
         val boardFile = Source.fromFile(filePath).getLines
-        val convertedBoard = boardFile.foldLeft (Vector.empty[Vector[Int]]) ( (acc: Vector[Vector[Int]], curr: String) => acc :+ curr.toVector.map(n => n.asDigit) )
-        convertedBoard.filter(n => !(n.isEmpty))
-
+        val convertedBoard = boardFile.foldLeft (Vector.empty[Vector[Int]]) ( (acc: Vector[Vector[Int]], curr: String) => acc :+ curr.toVector.map(n => n match {
+            case '.' => 0
+            case 'O' => 1
+        } ))
+        val preCleanupBoard = convertedBoard.filter(n => !(n.isEmpty))
+        val maxWidth = preCleanupBoard.map(_.size).reduce(_ max _)
+        preCleanupBoard.foldLeft (Vector.empty[Vector[Int]]) ( (acc: Vector[Vector[Int]], curr: Vector[Int]) => acc :+ curr.padTo(maxWidth, 0) )
     }
 
     def initBoardState(width: Int, height: Int): Vector[Vector[Int]] = {
